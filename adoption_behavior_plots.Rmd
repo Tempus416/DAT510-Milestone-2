@@ -1,0 +1,79 @@
+---
+title: "Tablet Adoption Behavior Analysis"
+author: "Brian La Monica"
+date: "2025-07-03"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(readr)
+library(ggplot2)
+library(scales)  # needed for percent labels
+library(dplyr)
+```
+
+```{r analysis}
+scoring <- read_csv("Scoring_With_Predictions.csv")
+
+# Quick overview of the predictions
+cat("Total customers scored:", nrow(scoring), "\n")
+table(scoring$Predicted_Adoption)
+prop.table(table(scoring$Predicted_Adoption)) * 100
+
+# Age distribution by predicted adoption
+ggplot(scoring, aes(x = Age, fill = Predicted_Adoption)) +
+  geom_histogram(binwidth = 5, position = "dodge", alpha = 0.7) +
+  theme_minimal() +
+  labs(title = "Age Distribution by Predicted Adoption Group",
+       x = "Age", y = "Count")
+
+# Gender distribution
+ggplot(scoring, aes(x = Predicted_Adoption, fill = Gender)) +
+  geom_bar(position = "fill") +
+  theme_minimal() +
+  labs(title = "Gender Distribution by Predicted Adoption",
+       x = "Predicted Adoption Group", y = "Proportion") +
+  scale_y_continuous(labels = scales::percent)
+
+# Behavioral analysis plots
+ggplot(scoring, aes(x = Predicted_Adoption, fill = Browsed_Electronics_12Mo)) +
+  geom_bar(position = "fill") +
+  theme_minimal() +
+  labs(title = "Browsing Electronics (12 Mo) by Predicted Adoption",
+       x = "Predicted Adoption Group", y = "Proportion") +
+  scale_y_continuous(labels = scales::percent)
+
+ggplot(scoring, aes(x = Predicted_Adoption, fill = Bought_Electronics_12Mo)) +
+  geom_bar(position = "fill") +
+  theme_minimal() +
+  labs(title = "Buying Electronics (12 Mo) by Predicted Adoption",
+       x = "Predicted Adoption Group", y = "Proportion") +
+  scale_y_continuous(labels = scales::percent)
+
+ggplot(scoring, aes(x = Predicted_Adoption, fill = Bought_Digital_Media_18Mo)) +
+  geom_bar(position = "fill") +
+  theme_minimal() +
+  labs(title = "Buying Digital Media (18 Mo) by Predicted Adoption",
+       x = "Predicted Adoption Group", y = "Proportion") +
+  scale_y_continuous(labels = scales::percent)
+
+ggplot(scoring, aes(x = Predicted_Adoption, fill = Bought_Digital_Books)) +
+  geom_bar(position = "fill") +
+  theme_minimal() +
+  labs(title = "Buying Digital Books by Predicted Adoption",
+       x = "Predicted Adoption Group", y = "Proportion") +
+  scale_y_continuous(labels = scales::percent)
+
+# summary table
+summary_stats <- scoring %>%
+  group_by(Predicted_Adoption) %>%
+  summarise(
+    Count = n(),
+    Avg_Age = round(mean(Age), 1),
+    Pct_Bought_Electronics = round(mean(Bought_Electronics_12Mo == "Yes") * 100, 1),
+    Pct_Bought_Digital_Media = round(mean(Bought_Digital_Media_18Mo == "Yes") * 100, 1)
+  )
+
+knitr::kable(summary_stats, caption = "Customer Characteristics by Predicted Adoption Group")
+```
